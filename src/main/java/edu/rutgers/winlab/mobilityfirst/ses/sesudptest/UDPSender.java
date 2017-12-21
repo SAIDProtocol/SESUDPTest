@@ -49,21 +49,21 @@ public class UDPSender {
     }
 
     public static void sendPacket(String dstAddress, int dstPort,
-            int packetSizeBytes, int packetCount,
+            int packetSizeBytes, final int packetCount,
             int bitsPerSecond) throws UnknownHostException, SocketException {
-        DatagramSocket socket = new DatagramSocket();
+        final DatagramSocket socket = new DatagramSocket();
         int sleepTime = 8000 * (packetSizeBytes + ETH_IP_UDP_HEADER_SIZE) / bitsPerSecond;
         System.out.printf("Per packet duration: %dms%n", sleepTime);
-        byte[] buf = new byte[packetSizeBytes];
+        final byte[] buf = new byte[packetSizeBytes];
         for (int i = 0; i < packetSizeBytes; i++) {
             buf[i] = (byte) (i & 0xFF);
         }
         InetAddress address = InetAddress.getByName(dstAddress);
 
-        DatagramPacket packet = new DatagramPacket(buf, packetSizeBytes, address, dstPort);
-        AtomicInteger counter = new AtomicInteger();
+        final DatagramPacket packet = new DatagramPacket(buf, packetSizeBytes, address, dstPort);
+        final AtomicInteger counter = new AtomicInteger();
 
-        Timer timer = new Timer("Send timer");
+        final Timer timer = new Timer("Send timer");
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
