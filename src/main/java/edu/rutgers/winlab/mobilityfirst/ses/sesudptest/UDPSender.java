@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Timer;
@@ -50,8 +51,10 @@ public class UDPSender {
 
     public static void sendPacket(String dstAddress, int dstPort,
             int packetSizeBytes, final int packetCount,
-            int bitsPerSecond) throws UnknownHostException, SocketException {
-        final DatagramSocket socket = new DatagramSocket();
+            int bitsPerSecond) throws UnknownHostException, SocketException, IOException {
+        final MulticastSocket mSocket = new MulticastSocket();
+        mSocket.setTimeToLive(64);
+//                final DatagramSocket socket = new DatagramSocket();
         int sleepTime = 8000 * (packetSizeBytes + ETH_IP_UDP_HEADER_SIZE) / bitsPerSecond;
         System.out.printf("Per packet duration: %dms%n", sleepTime);
         final byte[] buf = new byte[packetSizeBytes];
@@ -74,7 +77,8 @@ public class UDPSender {
                 }
                 writeHeader(buf, 0, val);
                 try {
-                    socket.send(packet);
+                    mSocket.send(packet);
+//                    socket.send(packet);
                 } catch (IOException ex) {
                     LOG.log(Level.SEVERE, "Failed in sending packet " + val, ex);
                 }
@@ -88,11 +92,11 @@ public class UDPSender {
     }
 
     private static void usage() {
-        System.err.printf("usage: java %s %dstip% %dstport% %pktSizeInBytes% %pktCount% %bandwidthInBitsPerSecond%");
+        System.err.println("usage: java %s %dstip% %dstport% %pktSizeInBytes% %pktCount% %bandwidthInBitsPerSecond%");
         System.exit(0);
     }
 
-    public static void main(String[] args) throws UnknownHostException, SocketException {
+    public static void main(String[] args) throws UnknownHostException, SocketException, IOException {
         if (args.length < 5) {
             usage();
         }
