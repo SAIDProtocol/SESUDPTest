@@ -87,7 +87,21 @@ public class UDPSender {
         }
     }
 
+    private static void usage() {
+        System.err.printf("usage: java %s %dstip% %dstport% %pktSizeInBytes% %pktCount% %bandwidthInBitsPerSecond%");
+        System.exit(0);
+    }
+
     public static void main(String[] args) throws UnknownHostException, SocketException {
-        sendPacket("239.11.0.2", 10000, 1050 - ETH_IP_UDP_HEADER_SIZE, 5, 2 * 1024 * 1024);
+        if (args.length < 5) {
+            usage();
+        }
+        String dstIP = args[0];
+        int dstPort = Integer.parseInt(args[1]);
+        int pktSizeInBytes = Integer.parseInt(args[2]);
+        int pktCount = Integer.parseInt(args[3]);
+        int bandwidthInBitsPerSecond = Integer.parseInt(args[4]);
+//        sendPacket("239.11.0.2", 10000, 1050 - ETH_IP_UDP_HEADER_SIZE, 5, 2 * 1024 * 1024);
+        sendPacket(dstIP, dstPort, pktSizeInBytes, pktCount, bandwidthInBitsPerSecond);
     }
 }
