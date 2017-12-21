@@ -64,26 +64,39 @@ public class UDPSender {
         InetAddress address = InetAddress.getByName(dstAddress);
 
         final DatagramPacket packet = new DatagramPacket(buf, packetSizeBytes, address, dstPort);
-        final AtomicInteger counter = new AtomicInteger();
 
-        final Timer timer = new Timer("Send timer");
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                int val = counter.getAndIncrement();
-                if (val == packetCount) {
-                    timer.cancel();
-                    return;
+        if (sleepTime > 0) {
+            final AtomicInteger counter = new AtomicInteger();
+            final Timer timer = new Timer("Send timer");
+            timer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    int val = counter.getAndIncrement();
+                    if (val == packetCount) {
+                        timer.cancel();
+                        return;
+                    }
+                    writeHeader(buf, 0, val);
+                    try {
+                        mSocket.send(packet);
+//                    socket.send(packet);
+                    } catch (IOException ex) {
+                        LOG.log(Level.SEVERE, "Failed in sending packet " + val, ex);
+                    }
                 }
-                writeHeader(buf, 0, val);
+            }, 0, sleepTime);
+        } else {
+            for (int i = 0; i < packetCount; i++) {
+                writeHeader(buf, 0, i);
                 try {
                     mSocket.send(packet);
 //                    socket.send(packet);
                 } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Failed in sending packet " + val, ex);
+                    LOG.log(Level.SEVERE, "Failed in sending packet " + i, ex);
                 }
             }
-        }, 0, sleepTime);
+        }
+
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ex) {
